@@ -5,9 +5,13 @@ const topic = byId('topic');
 const search = byId('search');
 const modeButtons = [...document.querySelectorAll('[data-mode]')];
 const groups = [...new Set(words.map(word => word.topic))];
-const pageSize = 20;
+const starKey = 'ielts-words.stars.v1';
+let stars = {};
+try {
+  stars = JSON.parse(localStorage.getItem(starKey)) || {};
+} catch {}
+let activeWord;
 let mode = 'browse';
-let page = 0;
 let round = [];
 let selected = null;
 let matched = new Set();
@@ -38,26 +42,78 @@ function button(label, action) {
   return control;
 }
 
+function wordKey(word) {
+  return word.topic + ':' + word.term;
+}
+
+function earned(word) {
+  return stars[wordKey(word)] || {};
+}
+
+function starLabel(word) {
+  const record = earned(word);
+  return (record.match ? '★' : '☆') + (record.spell ? '★' : '☆');
+}
+
+function updateProgress() {
+  const total = pool().reduce((sum, word) => {
+    const record = earned(word);
+    return sum + Number(Boolean(record.match)) + Number(Boolean(record.spell));
+  }, 0);
+  byId('progress').textContent = '★ ' + total + ' / ' + (pool().length * 2);
+}
+
+function award(word, skill) {
+  if (earned(word)[skill]) return;
+  stars[wordKey(word)] = { ...earned(word), [skill]: true };
+  try {
+    localStorage.setItem(starKey, JSON.stringify(stars));
+  } catch {}
+  updateProgress();
+}
+
 function showWord(word) {
-  byId('detail-word').textContent = word.term;
-  byId('detail-pos').textContent = word.pos + ' · ' + word.topic;
-  byId('detail-meaning').textContent = word.meaning;
-  byId('detail-example').textContent = word.example;
-  byId('detail').showModal();
+  activeWord = word;
+  byId('detail-word').textContent = word?.term || '选择一个单词';
+  byId('detail-pos').textContent = word ? word.pos + ' · ' + word.topic : '';
+  byId('detail-meaning').textContent = word?.meaning || '';
+  byId('detail-example').textContent = word?.example || '暂无匹配的例句。';
+  byId('example-block').hidden = !word;
+  const source = byId('example-source');
+  source.hidden = !word?.exampleId;
+  if (word?.exampleId) {
+    source.href = 'https://tatoeba.org/en/sentences/show/' + word.exampleId;
+    source.textContent = 'Tatoeba · ' + word.exampleAuthor;
+  } else {
+    source.removeAttribute('href');
+    source.textContent = '';
+  }
+  byId('detail-stars').textContent = word ? starLabel(word) + '　配对 / 拼写' : '';
 }
 
 function renderList() {
   const query = search.value.trim().toLowerCase();
-  const results = pool().filter(word => word.term.includes(query) || word.meaning.includes(query));
-  const pages = Math.ceil(results.length / pageSize);
-  page = Math.max(0, Math.min(page, pages - 1));
-  const visible = results.slice(page * pageSize, (page + 1) * pageSize);
-  byId('word-list').replaceChildren(...visible.map(word => button(word.term, () => showWord(word))));
+  const results = pool().filter(word => word.term.toLowerCase().includes(query) || word.meaning.includes(query));
+  if (!results.includes(activeWord)) showWord(results[0]);
+  else showWord(activeWord);
+  const list = byId('word-list');
+  let current;
+  list.replaceChildren(...results.map(word => {
+    const control = button(word.term, () => {
+      current?.setAttribute('aria-pressed', 'false');
+      control.setAttribute('aria-pressed', 'true');
+      current = control;
+      showWord(word);
+    });
+    control.setAttribute('aria-pressed', String(word === activeWord));
+    if (word === activeWord) current = control;
+    const status = document.createElement('span');
+    status.className = 'word-stars';
+    status.textContent = starLabel(word);
+    control.append(status);
+    return control;
+  }));
   byId('empty').hidden = results.length > 0;
-  byId('paging').hidden = pages < 2;
-  byId('page-number').textContent = (page + 1) + ' / ' + pages;
-  byId('prev').disabled = page === 0;
-  byId('next').disabled = page >= pages - 1;
 }
 
 function feedback(id, message, style = '') {
@@ -68,7 +124,7 @@ function feedback(id, message, style = '') {
 
 function startMatch() {
   const previous = new Set(round);
-  const candidates = shuffle(pool());
+  const candidates = shuffle(pool().filter(word => word.meaning));
   const ordered = [...candidates.filter(word => !previous.has(word)), ...candidates.filter(word => previous.has(word))];
   const terms = new Set();
   const meanings = new Set();
@@ -105,6 +161,7 @@ function startMatch() {
         return;
       }
       matched.add(word);
+      award(word, 'match');
       selected = null;
       left.get(word).setAttribute('aria-pressed', 'false');
       left.get(word).disabled = true;
@@ -122,28 +179,71 @@ function startMatch() {
 
 function nextSpelling(focus = true) {
   if (!spellingQueue.length) {
-    spellingQueue = shuffle(pool());
+    spellingQueue = shuffle(pool().filter(word => word.meaning));
     if (spellingQueue.length > 1 && spellingQueue.at(-1) === question) {
       spellingQueue.unshift(spellingQueue.pop());
     }
   }
   question = spellingQueue.pop();
   checked = false;
+  byId('submit').disabled = !question;
+  byId('answer').disabled = !question;
+  if (!question) {
+    byId('spell-clue').textContent = '这个主题暂时没有可练习的释义。';
+    byId('spell-hint').textContent = '';
+    byId('typed-letters').replaceChildren();
+    byId('correction').hidden = true;
+    feedback('spell-feedback', '');
+    return;
+  }
   byId('spell-clue').textContent = question.pos + ' · ' + question.meaning;
-  byId('spell-hint').textContent = '首字母 ' + question.term[0].toUpperCase() + ' · ' + question.term.replaceAll(' ', '').length + ' 个字母';
+  byId('spell-hint').textContent = '首字母 ' + question.term[0].toUpperCase() + ' · ' + question.term.replace(/[^a-z]/gi, '').length + ' 个字母';
   const answer = byId('answer');
   answer.value = '';
+  answer.dataset.letters = question.term.replace(/[^a-z]/gi, '').length;
+  byId('correction').hidden = true;
+  drawSpelling();
   answer.readOnly = false;
   byId('submit').textContent = '提交';
   feedback('spell-feedback', '');
   if (focus) answer.focus();
 }
 
+function drawSpelling(reveal = false) {
+  if (!question) return;
+  const entered = byId('answer').value.toLowerCase();
+  function row(correctRow) {
+    let index = 0;
+    return [...question.term.toLowerCase()].map(expected => {
+      const cell = document.createElement('span');
+      cell.className = 'letter';
+      if (!/[a-z]/.test(expected)) {
+        cell.textContent = expected === ' ' ? ' ' : expected;
+        if (expected === ' ') cell.classList.add('space');
+        return cell;
+      }
+      const actual = entered[index++];
+      cell.textContent = correctRow ? expected : (actual || '_');
+      if (reveal && !correctRow) cell.classList.add(actual === expected ? 'good' : 'bad');
+      return cell;
+    });
+  }
+  byId('typed-letters').replaceChildren(...row(false));
+  if (reveal) byId('correct-letters').replaceChildren(...row(true));
+}
+
+byId('answer').addEventListener('input', event => {
+  if (event.isComposing) return;
+  event.target.value = event.target.value.replace(/[^a-z]/gi, '').slice(0, Number(event.target.dataset.letters));
+  drawSpelling();
+});
+
 byId('spell-form').addEventListener('submit', event => {
   event.preventDefault();
+  if (!question) return;
   if (checked) return nextSpelling();
   const answer = byId('answer');
-  const value = answer.value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const value = answer.value.toLowerCase().replace(/[^a-z]/g, '');
   if (!value) {
     feedback('spell-feedback', '先输入一个答案。');
     answer.focus();
@@ -151,13 +251,17 @@ byId('spell-form').addEventListener('submit', event => {
   }
   checked = true;
   answer.readOnly = true;
-  const correct = value === question.term;
+  const correct = value === question.term.toLowerCase().replace(/[^a-z]/g, '');
+  if (correct) award(question, 'spell');
+  drawSpelling(!correct);
+  byId('correction').hidden = correct;
   feedback('spell-feedback', correct ? '拼写正确！' : '正确拼写是 ' + question.term, correct ? 'good' : 'bad');
   byId('submit').textContent = '下一题';
   byId('submit').focus();
 });
 
 function refresh() {
+  updateProgress();
   byId('count').textContent = pool().length + ' 个词';
   if (mode === 'browse') renderList();
   if (mode === 'match') startMatch();
@@ -178,12 +282,12 @@ for (const control of modeButtons) {
 }
 
 topic.addEventListener('change', () => {
-  page = 0;
   spellingQueue = [];
   refresh();
 });
-search.addEventListener('input', () => { page = 0; renderList(); });
-byId('prev').addEventListener('click', () => { page--; renderList(); });
-byId('next').addEventListener('click', () => { page++; renderList(); });
+search.addEventListener('input', () => {
+  byId('word-list').scrollTop = 0;
+  renderList();
+});
 byId('new-round').addEventListener('click', startMatch);
 refresh();
