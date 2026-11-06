@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IELTS Words · 雅思词汇练习</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#203530;background:#f4f7f3;line-height:1.55;--accent:#225d4d;--muted:#50685e;--border:#d0ddd5}
+*{box-sizing:border-box}body{margin:0}main{max-width:840px;margin:auto;padding:clamp(18px,5vw,46px)}header{padding:18px 0 24px}h1{font-size:clamp(32px,7vw,58px);margin:0;letter-spacing:-.045em;line-height:1.15}h2,h3,p{margin:.55em 0}.eyebrow{font-size:.78rem;font-weight:750;letter-spacing:.15em;color:var(--accent)}.muted,footer{color:var(--muted)}nav,.toolbar,.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}nav{margin:0 0 16px}button,input,select{font:inherit;color:inherit;border:1px solid var(--border);border-radius:9px;background:white;padding:9px 12px;min-height:44px}button{cursor:pointer}button:hover:not(:disabled){border-color:var(--accent)}button[aria-pressed=true],.primary{background:var(--accent);color:white;border-color:var(--accent)}:focus-visible{outline:3px solid #5787ac;outline-offset:3px}.card{background:white;border:1px solid var(--border);border-radius:16px;padding:clamp(14px,3vw,24px);margin-top:12px}.toolbar{justify-content:space-between}.toolbar label{display:flex;gap:8px;align-items:center}#search{width:100%;margin:10px 0}.words,.pairs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.words button{text-align:left}.pairs>div{display:grid;gap:7px;align-content:start}.pairs button{overflow-wrap:anywhere}.pairs button:disabled{background:#e6f2ea;color:#376347;opacity:1}.feedback{min-height:1.55em;font-weight:650}.bad{color:#a33827}.good{color:var(--accent)}.paging{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px}.tag{font-size:.85rem;color:var(--muted)}dialog{border:1px solid var(--border);border-radius:16px;padding:22px;width:min(92vw,520px);color:inherit}dialog::backdrop{background:#20353088}footer{margin-top:18px;font-size:.85rem}#answer{flex:1;min-width:130px} [hidden]{display:none!important}
+</style>
+<script defer src="words.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body><main>
+<header><div class="eyebrow">IELTS VOCABULARY</div><h1>雅思词汇练习</h1><p class="muted">按主题查词，做一轮配对，再试着拼出单词。</p></header>
+<nav aria-label="练习模式">
+<button type="button" data-mode="browse" aria-pressed="true">查词</button>
+<button type="button" data-mode="match" aria-pressed="false">配对</button>
+<button type="button" data-mode="spell" aria-pressed="false">拼写</button>
+</nav>
+<div class="toolbar"><label for="topic">主题 <select id="topic"><option value="">全部主题</option></select></label><span class="tag" id="count"></span></div>
+<section class="card" id="browse" aria-label="查词">
+<label for="search">搜索词汇</label><input id="search" type="search" placeholder="输入英文单词或中文释义">
+<div class="words" id="word-list"></div><p id="empty" hidden>没有找到符合条件的词。</p>
+<div class="paging" id="paging"><button id="prev">上一页</button><span id="page-number"></span><button id="next">下一页</button></div>
+</section>
+<section class="card" id="match" hidden aria-label="配对">
+<h2>英汉配对</h2><p class="muted">先选英文，再选对应的中文。</p>
+<div class="pairs"><div id="english" aria-label="英文选项"></div><div id="chinese" aria-label="中文选项"></div></div>
+<p class="feedback" id="match-feedback" aria-live="polite"></p><button class="primary" id="new-round">换一组</button>
+</section>
+<section class="card" id="spell" hidden aria-label="拼写">
+<h2>看释义拼单词</h2><p id="spell-clue"></p><p class="muted" id="spell-hint"></p>
+<form class="actions" id="spell-form"><input id="answer" aria-label="英文拼写" placeholder="输入英文" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="primary" id="submit">提交</button></form>
+<p class="feedback" id="spell-feedback" aria-live="polite"></p>
+</section>
+<dialog id="detail"><form method="dialog"><button>关闭</button></form><h2 id="detail-word"></h2><p class="tag" id="detail-pos"></p><p id="detail-meaning"></p><h3>例句</h3><p lang="en" id="detail-example"></p></dialog>
+<footer>精选词头来自提供的雅思词汇 PDF。本站释义为简写，例句为新编，当前版本收录部分词条。</footer>
+</main></body></html>
