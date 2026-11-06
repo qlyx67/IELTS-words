@@ -14,6 +14,15 @@ main{max-width:1100px}.eyebrow{color:#5748b1}header{background:linear-gradient(1
 .words button .word-stars{font-size:.74rem}
 .words button[aria-pressed="true"] .word-stars{color:#fff2aa}
 @media(max-width:530px){.workspace{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}.words{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.words button{padding:5px;min-height:46px;font-size:.78rem}}
+.word-group-title{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:10px 0 2px;font-size:.86rem;color:var(--accent)}
+.word-group-title::after{content:'';flex:1;border-top:1px solid var(--border)}
+.scope-picker summary{cursor:pointer;font-weight:650}
+.scope-list{max-height:42vh;overflow:auto;margin:12px 0}
+.scope-list fieldset{border:1px solid var(--border);border-radius:9px;margin:0 0 10px;padding:6px 10px}
+.scope-list legend{font-weight:650}
+.scope-options{display:flex;flex-wrap:wrap;gap:6px 12px}
+.scope-options label{display:inline-flex;align-items:center;gap:4px;min-height:36px}
+.scope-options input{min-height:0;accent-color:var(--accent)}
 </style>
 <script>const words = [];</script>
 <script defer src="words-01.js"></script>
@@ -29,7 +38,7 @@ main{max-width:1100px}.eyebrow{color:#5748b1}header{background:linear-gradient(1
 <script defer src="words-11.js"></script>
 <script defer src="words-12.js"></script>
 <script defer src="extra-examples.js"></script>
-<script defer src="app-v3.js"></script>
+<script defer src="app-v4.js"></script>
 </head>
 <body><main>
 <header><div class="eyebrow">IELTS VOCABULARY</div><h1>雅思词汇练习</h1><p class="muted">按主题查词，做一轮配对，再试着拼出单词。</p></header>
@@ -39,6 +48,12 @@ main{max-width:1100px}.eyebrow{color:#5748b1}header{background:linear-gradient(1
 <button type="button" data-mode="spell" aria-pressed="false">拼写</button>
 </nav>
 <div class="toolbar"><label for="topic">主题 <select id="topic"><option value="">全部主题</option></select></label><span class="tag" id="count"></span><span class="word-stars" id="progress" aria-live="polite"></span></div>
+<details class="card scope-picker" id="practice-scope" hidden>
+<summary>选择练习分组 <span class="tag" id="scope-summary"></span></summary>
+<p class="muted">可以跨主题勾选多组。未勾选时，使用上方「主题」选定的范围。</p>
+<div class="scope-list" id="scope-list"></div>
+<div class="actions"><button type="button" id="scope-clear">清除所选分组</button></div>
+</details>
 <section class="card" id="browse" aria-label="查词">
 <label for="search">搜索词汇</label><input id="search" type="search" placeholder="输入英文单词或中文释义">
 <div class="workspace">
