@@ -23,25 +23,32 @@ main{max-width:1100px}.eyebrow{color:#5748b1}header{background:linear-gradient(1
 .scope-options{display:flex;flex-wrap:wrap;gap:6px 12px}
 .scope-options label{display:inline-flex;align-items:center;gap:4px;min-height:36px}
 .scope-options input{min-height:0;accent-color:var(--accent)}
+header{position:relative;padding-top:42px}
+.hero-credit{position:absolute;top:12px;right:16px;color:#5748a0;font-size:.8rem;font-weight:650;letter-spacing:.04em}
+.celebration{padding:0;text-align:center;box-shadow:0 18px 65px #26234a44}
+.celebration::backdrop{background:#26234a66}
+.celebration-inner{padding:20px 24px 24px;background:linear-gradient(145deg,#fff0f6,#f2edff 75%,#fff7e2)}
+.celebration h2{font-size:2rem;margin:4px 0;color:#49348d}
+.celebration svg{display:block;width:152px;height:85px;margin:auto}
 </style>
 <script>const words = [];</script>
 <script defer src="words-01.js"></script>
-<script defer src="words-02.js"></script>
-<script defer src="words-03.js"></script>
+<script defer src="words-02.js?v=5"></script>
+<script defer src="words-03.js?v=5"></script>
 <script defer src="words-04.js"></script>
 <script defer src="words-05.js"></script>
 <script defer src="words-06.js"></script>
 <script defer src="words-07.js"></script>
-<script defer src="words-08.js"></script>
+<script defer src="words-08.js?v=5"></script>
 <script defer src="words-09.js"></script>
 <script defer src="words-10.js"></script>
 <script defer src="words-11.js"></script>
-<script defer src="words-12.js"></script>
+<script defer src="words-12.js?v=5"></script>
 <script defer src="extra-examples.js"></script>
-<script defer src="app-v4.js"></script>
+<script defer src="app-v5.js"></script>
 </head>
 <body><main>
-<header><div class="eyebrow">IELTS VOCABULARY</div><h1>雅思词汇练习</h1><p class="muted">按主题查词，做一轮配对，再试着拼出单词。</p></header>
+<header><span class="hero-credit">make by lyxx</span><div class="eyebrow">IELTS VOCABULARY</div><h1>雅思词汇练习</h1><p class="muted">按主题查词，做一轮配对，再试着拼出单词。</p></header>
 <nav aria-label="练习模式">
 <button type="button" data-mode="browse" aria-pressed="true">查词</button>
 <button type="button" data-mode="match" aria-pressed="false">配对</button>
@@ -75,5 +82,19 @@ main{max-width:1100px}.eyebrow{color:#5748b1}header{background:linear-gradient(1
 </form>
 <p class="feedback" id="spell-feedback" aria-live="polite"></p>
 </section>
+<dialog class="celebration" id="match-celebration" aria-labelledby="celebration-title">
+<div class="celebration-inner">
+<svg viewBox="0 0 152 85" aria-hidden="true">
+  <path d="M76 71C45 53 39 40 48 29c8-10 21-8 28 2 7-10 20-12 28-2 9 11 3 24-28 42Z" fill="#f18ab7"/>
+  <path d="m23 18 3 8 8 3-8 3-3 8-3-8-8-3 8-3Zm104 22 3 8 8 3-8 3-3 8-3-8-8-3 8-3ZM103 4l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#f0b83b"/>
+  <circle cx="39" cy="62" r="3" fill="#9983dd"/><circle cx="120" cy="20" r="3" fill="#9983dd"/>
+  <path d="m12 55 7 3m118-32 5-5M59 9l4 6" stroke="#9983dd" stroke-width="3" stroke-linecap="round"/>
+</svg>
+<h2 id="celebration-title">你太棒啦！</h2>
+<p>这一轮全部一次配对正确。</p>
+<form method="dialog"><button autofocus>继续练习</button></form>
+<p class="tag">点卡片外的空白处也可以关闭</p>
+</div>
+</dialog>
 <footer>词头按雅思词汇 PDF 的 22 个主题整理。扩充释义来自 <a href="https://github.com/skywind3000/ECDICT">ECDICT</a>（<a href="ECDICT-LICENSE.txt">MIT</a>），部分例句来自 <a href="https://tatoeba.org/">Tatoeba</a>（<a href="https://creativecommons.org/licenses/by/2.0/fr/">CC BY 2.0 FR</a>）。星星保存在当前浏览器。</footer>
 </main></body></html>
